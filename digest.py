@@ -1,7 +1,9 @@
 """Gemini API 호출부 (멀티모달: 텍스트 + 차트 이미지).
 
-- summarize_channel: 채널 하나의 메시지들 → 1차 요약 (이미지 포함)
-- merge_summaries: 채널별 1차 요약들 → 최종 다이제스트
+무료 등급은 하루 호출 '횟수'가 빡빡(약 20회)하므로, 채널마다 따로 부르지 않고
+모든 채널을 묶어 한 번(또는 소수 묶음)에 호출한다. (이미지 개수는 호출 횟수와 무관)
+
+- make_digest: 전 채널 원문 → 최종 다이제스트 (기본 1회 호출)
 """
 import time
 
@@ -24,54 +26,74 @@ def _get_client():
     return _client
 
 
-def _generate(contents, retries: int = 4):
-    """generate_content + 분당 속도제한(429) 자동 재시도(점점 길게 대기)."""
-    delay = 20  # 무료 등급 분당 한도에 걸리면 20초부터 백오프
-    for attempt in range(retries + 1):
-        try:
-            resp = _get_client().models.generate_content(
-                model=config.GEMINI_MODEL,
-                contents=contents,
-            )
-            return (resp.text or "").strip()
-        except genai_errors.APIError as e:
-            code = getattr(e, "code", None)
-            # 429=속도제한, 503=일시적 → 대기 후 재시도. 그 외는 즉시 실패.
-            if code in (429, 503) and attempt < retries:
-                print(f"   ⏳ 한도/일시오류({code}) → {delay}초 대기 후 재시도 ({attempt+1}/{retries})")
-                time.sleep(delay)
-                delay = min(delay * 2, 90)
-                continue
-            raise
+def _generate(contents):
+    """모델 폴백 체인으로 호출. 한 모델이 한도(429)면 다음 모델로 넘어간다.
+    무료 한도는 모델별로 별도라, 체인을 두면 하루 가용량이 모델 수만큼 늘어난다."""
+    last_err = None
+    for model in config.GEMINI_MODELS:
+        for attempt in range(2):  # 503 같은 일시 오류만 1회 짧게 재시도
+            try:
+                resp = _get_client().models.generate_content(model=model, contents=contents)
+                if model != config.GEMINI_MODELS[0]:
+                    print(f"   ↪ '{model}' 모델로 성공")
+                return (resp.text or "").strip()
+            except genai_errors.APIError as e:
+                code = getattr(e, "code", None)
+                last_err = e
+                if code == 503 and attempt == 0:
+                    print(f"   ⏳ {model} 일시오류(503) → 10초 후 재시도")
+                    time.sleep(10)
+                    continue
+                # 429(한도 소진) 또는 재시도 후에도 실패 → 다음 모델로
+                print(f"   ⚠ {model} 실패(code={code}) → 다음 모델 시도")
+                break
+    raise last_err
 
 
-def summarize_channel(channel_name: str, messages: list) -> str:
-    """messages: [{time, text, images:[bytes]}] → 1차 요약 문자열."""
-    if not messages:
-        return ""  # 빈 채널은 호출 자체를 안 함 (가드)
-
-    # contents = [프롬프트, 채널명, 그리고 메시지별로 (텍스트 + 이미지...)]
-    contents = [prompts.PER_CHANNEL, f"채널명: {channel_name}"]
-    for m in messages:
-        block = f"--- {m['time']} ---\n{m['text']}".strip()
-        contents.append(block)
-        for img in m["images"]:
-            contents.append(types.Part.from_bytes(data=img, mime_type="image/jpeg"))
-
-    # --- 점검 4: Gemini로 실제 넘어가는 내용 확인 ---
-    n_img = sum(len(m["images"]) for m in messages)
-    print(f"[점검4] '{channel_name}' → Gemini 전달: 텍스트블록 {len(messages)}개, 이미지 {n_img}장")
-
-    return _generate(contents)
+def _build_contents(prompt: str, batch: list, img_cap: int):
+    """batch: [(채널명, messages)] → Gemini contents 리스트(텍스트+이미지 인터리브)."""
+    contents = [prompt]
+    used = 0
+    for name, messages in batch:
+        contents.append(f"### 채널: {name}")
+        for m in messages:
+            contents.append(f"--- {m['time']} ---\n{m['text']}".strip())
+            for img in m["images"]:
+                if used < img_cap:
+                    contents.append(types.Part.from_bytes(data=img, mime_type="image/jpeg"))
+                    used += 1
+    return contents, used
 
 
-def merge_summaries(summaries: list[str]) -> str:
-    """채널별 1차 요약 리스트 → 최종 다이제스트 문자열."""
-    joined = "\n\n".join(s for s in summaries if s.strip())
+def make_digest(data: dict) -> str:
+    """data: {채널명: [messages]} → 최종 다이제스트 문자열.
+
+    기본은 전 채널을 한 번에 호출(1회). CHANNELS_PER_BATCH 가 0보다 크면
+    그 크기로 묶어서 묶음별 호출 후 합친다(묶음수+1회)."""
+    active = [(n, m) for n, m in data.items() if m]
+    if not active:
+        return "오늘은 새 메시지 없음"
+
+    size = config.CHANNELS_PER_BATCH or len(active)  # 0 = 전부 한 묶음
+    batches = [active[i:i + size] for i in range(0, len(active), size)]
+
+    # 한 묶음(=한방 호출): COMBINED 로 바로 최종 다이제스트
+    if len(batches) == 1:
+        contents, nimg = _build_contents(prompts.COMBINED, batches[0], config.MAX_IMAGES_TOTAL)
+        print(f"[점검4] 한방 호출 → Gemini: 채널 {len(active)}개, 이미지 {nimg}장 (1회 호출)")
+        return _generate(contents)
+
+    # 여러 묶음: 묶음별 부분 다이제스트 → 마지막에 합치기
+    partials = []
+    for i, b in enumerate(batches):
+        contents, nimg = _build_contents(prompts.COMBINED, b, config.MAX_IMAGES_TOTAL)
+        print(f"[점검4] 묶음 {i+1}/{len(batches)} → Gemini: 채널 {len(b)}개, 이미지 {nimg}장")
+        partials.append(_generate(contents))
+        if i < len(batches) - 1:
+            time.sleep(config.SLEEP_BETWEEN_CALLS)
+
+    joined = "\n\n".join(p for p in partials if p.strip())
     if not joined.strip():
-        return "오늘은 새 메시지 없음"  # 코드 레벨 가드
-
-    contents = [prompts.EDITOR, joined]
-    print(f"[점검4] 최종 합치기 → Gemini 전달: 1차요약 {len(summaries)}개, 총 {len(joined)}자")
-
-    return _generate(contents)
+        return "오늘은 새 메시지 없음"
+    print(f"[점검4] 합치기 → Gemini: 묶음 {len(partials)}개 (1회 호출)")
+    return _generate([prompts.EDITOR, joined])

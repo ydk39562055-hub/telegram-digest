@@ -44,6 +44,7 @@ jobs:
           MAX_IMAGES_PER_CHANNEL: "12"
           SLEEP_BETWEEN_CALLS: "4"
           TZ_NAME: "Asia/Seoul"
-          # 수동 실행에서 send_now=true 면 즉시 발송, 아니면 18:00 정각 발송
-          SEND_AT: ${{ (github.event_name == 'workflow_dispatch' && inputs.send_now) && '' || '18:00' }}
+          # 수동 실행에서 send_now=true 면 'now'(즉시 발송), 아니면 18:00 정각 발송.
+          # (빈문자열 '' 은 GitHub 식에서 falsy 라 || 폴백에 먹히므로 'now' 센티넬 사용)
+          SEND_AT: ${{ (github.event_name == 'workflow_dispatch' && inputs.send_now) && 'now' || '18:00' }}
         run: python main.py

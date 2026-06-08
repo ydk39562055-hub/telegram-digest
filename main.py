@@ -33,8 +33,8 @@ OUT_DIR = Path(__file__).parent / "출력"
 def _wait_until_send_time():
     """SEND_AT('HH:MM', 한국시간)이 지정되면 그 시각 정각까지 대기.
     이미 지났으면 즉시 발송."""
-    if not config.SEND_AT:
-        return
+    if not config.SEND_AT or config.SEND_AT.lower() == "now":
+        return  # 즉시 발송
     try:
         hh, mm = (int(x) for x in config.SEND_AT.split(":"))
     except ValueError:
@@ -59,25 +59,11 @@ async def run():
         print("\n오늘은 새 메시지 없음")
         return
 
-    # 2) 채널별 1차 요약 (무료 등급 분당 한도 회피용으로 호출 사이 약간 쉼)
-    summaries = []
-    active = [(ch, m) for ch, m in data.items() if m]
-    for i, (ch, messages) in enumerate(active):
-        try:
-            s = digest.summarize_channel(ch, messages)
-            if s and s != "오늘은 새 메시지 없음":
-                summaries.append(s)
-        except Exception as e:
-            print(f"[요약] ⚠ '{ch}' 1차 요약 실패: {e}")
-        if i < len(active) - 1:
-            time.sleep(config.SLEEP_BETWEEN_CALLS)
-
-    if not summaries:
+    # 2~3) 전 채널 묶어서 한 번에 다이제스트 생성 (무료 호출 한도 절약)
+    final = digest.make_digest(data)
+    if not final or final == "오늘은 새 메시지 없음":
         print("\n오늘은 새 메시지 없음")
         return
-
-    # 3) 합치기
-    final = digest.merge_summaries(summaries)
 
     # 4) 출력 + 저장
     print("\n" + "=" * 60)

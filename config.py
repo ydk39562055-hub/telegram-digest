@@ -43,6 +43,13 @@ DEST_CHANNEL = os.getenv("DEST_CHANNEL", "").strip()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+# 한 모델 무료 한도(하루 ~20회)가 소진되면 다음 모델로 폴백. 모델별 한도는 별도.
+GEMINI_MODELS = [m.strip() for m in os.getenv("GEMINI_MODELS", "").split(",") if m.strip()] or [
+    GEMINI_MODEL,
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-1.5-flash",
+]
 
 # FOLDER 가 지정되면 그 텔레그램 채팅 폴더의 채널을 자동으로 쓴다(CHANNELS 무시).
 FOLDER = os.getenv("FOLDER", "").strip()
@@ -56,5 +63,9 @@ HOURS = _as_int("HOURS", 24)
 # 정시 발송 시각("HH:MM", 한국시간). 비우면 계산 끝나는 즉시 발송.
 SEND_AT = os.getenv("SEND_AT", "").strip()
 MAX_IMAGES_PER_CHANNEL = _as_int("MAX_IMAGES_PER_CHANNEL", 12)
-# 무료 등급 분당 한도 회피용: 채널 요약 호출 사이 대기(초)
+# Gemini 호출 1건당 첨부할 전체 이미지 상한(요청 크기 제어용)
+MAX_IMAGES_TOTAL = _as_int("MAX_IMAGES_TOTAL", 50)
+# 한 번에 묶을 채널 수. 0=전 채널 한방 호출(무료 한도에 가장 안전).
+CHANNELS_PER_BATCH = _as_int("CHANNELS_PER_BATCH", 0)
+# 여러 묶음일 때 호출 사이 대기(초)
 SLEEP_BETWEEN_CALLS = _as_int("SLEEP_BETWEEN_CALLS", 4)
