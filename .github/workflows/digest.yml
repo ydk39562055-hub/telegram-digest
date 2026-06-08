@@ -1,0 +1,49 @@
+name: telegram-digest
+
+on:
+  schedule:
+    # 매일 08:00 UTC = 17:00 한국시간(발송 1시간 전)에 시작.
+    # 계산을 끝내두고 SEND_AT(18:00)에 정각 발송.
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+    inputs:
+      send_now:
+        description: "테스트: 18:00 기다리지 말고 즉시 발송"
+        type: boolean
+        default: false
+
+concurrency:
+  group: telegram-digest
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Run digest
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION_STRING: ${{ secrets.TG_SESSION_STRING }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+          FOLDER: ${{ secrets.FOLDER }}
+          DEST_CHANNEL: ${{ secrets.DEST_CHANNEL }}
+          SINCE_MIDNIGHT: "false"
+          HOURS: "24"
+          MAX_IMAGES_PER_CHANNEL: "12"
+          SLEEP_BETWEEN_CALLS: "4"
+          TZ_NAME: "Asia/Seoul"
+          # 수동 실행에서 send_now=true 면 즉시 발송, 아니면 18:00 정각 발송
+          SEND_AT: ${{ (github.event_name == 'workflow_dispatch' && inputs.send_now) && '' || '18:00' }}
+        run: python main.py

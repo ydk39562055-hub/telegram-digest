@@ -1,0 +1,14 @@
+# 비밀값 / 세션 (절대 커밋 금지)
+.env
+*.session
+*.session-journal
+session_string.txt
+.login_state.json
+
+# 파이썬
+__pycache__/
+*.pyc
+
+# 출력물 / 로그
+출력/
+run_log.txt
