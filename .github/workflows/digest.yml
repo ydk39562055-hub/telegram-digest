@@ -2,9 +2,9 @@ name: telegram-digest
 
 on:
   schedule:
-    # 매일 08:00 UTC = 17:00 한국시간(발송 1시간 전)에 시작.
-    # 계산을 끝내두고 SEND_AT(18:00)에 정각 발송.
-    - cron: "0 8 * * *"
+    # 07:37 UTC = 16:37 한국시간에 시작. (정각 '0분'은 cron이 몰려 크게 밀리므로
+    # 일부러 어중간한 분 + 발송 83분 전으로 당김.) 계산 후 SEND_AT(18:00) 정각 발송.
+    - cron: "37 7 * * *"
   workflow_dispatch:
     inputs:
       send_now:
