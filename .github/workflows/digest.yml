@@ -2,15 +2,15 @@ name: telegram-digest
 
 on:
   schedule:
-    # 07:37 UTC = 16:37 한국시간에 시작. (정각 '0분'은 cron이 몰려 크게 밀리므로
-    # 일부러 어중간한 분 + 발송 83분 전으로 당김.) 계산 후 SEND_AT(18:00) 정각 발송.
-    - cron: "37 7 * * *"
+    # 06:07 UTC = 15:07 한국시간에 시작. (정각 '0분'은 cron이 몰려 크게 밀리므로
+    # 일부러 어중간한 분으로. 요약이 끝나는 즉시 바로 발송 → 대기 없음.)
+    - cron: "7 6 * * *"
   workflow_dispatch:
     inputs:
       send_now:
-        description: "테스트: 18:00 기다리지 말고 즉시 발송"
+        description: "(이제 예약도 기본 즉시발송. 이 옵션은 무시됨)"
         type: boolean
-        default: false
+        default: true
 
 concurrency:
   group: telegram-digest
@@ -44,7 +44,6 @@ jobs:
           MAX_IMAGES_PER_CHANNEL: "12"
           SLEEP_BETWEEN_CALLS: "4"
           TZ_NAME: "Asia/Seoul"
-          # 수동 실행에서 send_now=true 면 'now'(즉시 발송), 아니면 18:00 정각 발송.
-          # (빈문자열 '' 은 GitHub 식에서 falsy 라 || 폴백에 먹히므로 'now' 센티넬 사용)
-          SEND_AT: ${{ (github.event_name == 'workflow_dispatch' && inputs.send_now) && 'now' || '18:00' }}
+          # 항상 즉시 발송(요약 끝나면 바로). 더이상 18:00까지 기다리지 않음.
+          SEND_AT: "now"
         run: python main.py
