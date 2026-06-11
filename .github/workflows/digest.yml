@@ -1,16 +1,11 @@
 name: telegram-digest
 
+# 깃허브 내부 예약(schedule)은 무료 등급에서 정시보다 몇 시간씩 늦게 떠서 제거함.
+# 대신 외부 스케줄러(cron-job.org)가 매일 한국시간 16:00 정각에
+# workflow_dispatch(아래)를 호출해 '즉시' 실행시킨다. 실행은 3~5분이면 끝나 16:05쯤 발송.
+# (수동으로 돌리고 싶으면 Actions 탭의 'Run workflow' 버튼을 눌러도 즉시 실행됨)
 on:
-  schedule:
-    # 06:07 UTC = 15:07 한국시간에 시작. (정각 '0분'은 cron이 몰려 크게 밀리므로
-    # 일부러 어중간한 분으로. 요약이 끝나는 즉시 바로 발송 → 대기 없음.)
-    - cron: "7 6 * * *"
   workflow_dispatch:
-    inputs:
-      send_now:
-        description: "(이제 예약도 기본 즉시발송. 이 옵션은 무시됨)"
-        type: boolean
-        default: true
 
 concurrency:
   group: telegram-digest
@@ -44,6 +39,6 @@ jobs:
           MAX_IMAGES_PER_CHANNEL: "12"
           SLEEP_BETWEEN_CALLS: "4"
           TZ_NAME: "Asia/Seoul"
-          # 항상 즉시 발송(요약 끝나면 바로). 더이상 18:00까지 기다리지 않음.
+          # 항상 즉시 발송(요약 끝나면 바로).
           SEND_AT: "now"
         run: python main.py
