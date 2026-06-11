@@ -34,6 +34,7 @@ jobs:
           GEMINI_MODEL: gemini-2.5-flash
           FOLDER: ${{ secrets.FOLDER }}
           DEST_CHANNEL: ${{ secrets.DEST_CHANNEL }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           SINCE_MIDNIGHT: "false"
           HOURS: "24"
           MAX_IMAGES_PER_CHANNEL: "12"

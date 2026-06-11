@@ -40,6 +40,9 @@ TG_SESSION = str(BASE_DIR / os.getenv("TG_SESSION", "digest"))
 TG_SESSION_STRING = os.getenv("TG_SESSION_STRING", "").strip()
 # 다이제스트를 보낼 비공개 채널 id (예: -1001234567890). 비우면 전송 안 함.
 DEST_CHANNEL = os.getenv("DEST_CHANNEL", "").strip()
+# 봇 토큰. 있으면 '봇'이 채널에 올림 → 내 알림이 울린다(본인 계정이 올리면 알림 안 옴).
+# 비우면 기존처럼 사용자 계정(TG_SESSION)으로 올림.
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
