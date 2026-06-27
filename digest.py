@@ -45,7 +45,8 @@ def _generate(contents):
                     time.sleep(10)
                     continue
                 # 429(한도 소진) 또는 재시도 후에도 실패 → 다음 모델로
-                print(f"   ⚠ {model} 실패(code={code}) → 다음 모델 시도")
+                msg = (getattr(e, "message", None) or str(e)).replace("\n", " ")
+                print(f"   ⚠ {model} 실패(code={code}) {msg[:300]} → 다음 모델 시도")
                 break
     raise last_err
 

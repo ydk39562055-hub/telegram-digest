@@ -49,9 +49,9 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 # 한 모델 무료 한도(하루 ~20회)가 소진되면 다음 모델로 폴백. 모델별 한도는 별도.
 GEMINI_MODELS = [m.strip() for m in os.getenv("GEMINI_MODELS", "").split(",") if m.strip()] or [
     GEMINI_MODEL,
-    "gemini-flash-latest",
     "gemini-2.5-flash-lite",
-    "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-flash-latest",
 ]
 
 # FOLDER 가 지정되면 그 텔레그램 채팅 폴더의 채널을 자동으로 쓴다(CHANNELS 무시).
