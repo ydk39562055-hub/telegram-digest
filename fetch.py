@@ -23,6 +23,11 @@ async def _resolve_targets(client):
         res = await client(GetDialogFiltersRequest())
         filters = getattr(res, "filters", res)
         wanted = config.FOLDER.strip()
+        # 진단: 이 계정에 있는 모든 폴더와 포함 채널 수
+        for f in filters:
+            t = getattr(f, "title", None); tt = getattr(t, "text", t)
+            if tt is None: continue
+            print(f"[진단] 폴더 '{str(tt).strip()}' → 포함 {len(getattr(f, 'include_peers', []) or [])}개")
         for f in filters:
             title = getattr(f, "title", None)
             if title is None:
@@ -84,6 +89,13 @@ async def fetch_all():
         )
         await client.disconnect()
         return {}
+
+    # 진단: 봇이 로그인된 계정 (전화번호는 공개 로그라 제외)
+    try:
+        me = await client.get_me()
+        print(f"[점검2.5] 로그인 계정: {getattr(me, 'first_name', '') or ''} / @{getattr(me, 'username', None)} / id={getattr(me, 'id', None)}")
+    except Exception as e:
+        print(f"[점검2.5] 계정 조회 실패: {e}")
 
     # --- 점검 1: 대상 채널 확정 (폴더 또는 CHANNELS) ---
     targets = await _resolve_targets(client)
