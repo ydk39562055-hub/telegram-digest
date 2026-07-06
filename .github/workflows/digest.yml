@@ -7,6 +7,10 @@ name: telegram-digest
 on:
   workflow_dispatch:
 
+# docs/index.html(웹페이지)을 다시 커밋해 GitHub Pages로 발행하려면 쓰기 권한 필요.
+permissions:
+  contents: write
+
 concurrency:
   group: telegram-digest
   cancel-in-progress: false
@@ -43,3 +47,17 @@ jobs:
           # 항상 즉시 발송(요약 끝나면 바로).
           SEND_AT: "now"
         run: python main.py
+
+      - name: Publish web page (docs/index.html → Pages)
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain docs)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs
+            git commit -m "다이제스트 웹 갱신 $(TZ=Asia/Seoul date +%F' '%H:%M)"
+            git push
+            echo "웹페이지 발행 완료"
+          else
+            echo "docs 변경 없음(새 메시지 없거나 내용 동일) → 발행 생략"
+          fi

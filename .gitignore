@@ -12,3 +12,6 @@ __pycache__/
 # 출력물 / 로그
 출력/
 run_log.txt
+
+# 디버그 로그
+watch_out.txt

@@ -71,10 +71,16 @@ async def run():
     print("=" * 60)
 
     OUT_DIR.mkdir(exist_ok=True)
-    stamp = datetime.now(config.TZ).strftime("%Y-%m-%d")
+    now = datetime.now(config.TZ)
+    stamp = now.strftime("%Y-%m-%d")
     path = OUT_DIR / f"다이제스트_{stamp}.md"
     path.write_text(final, encoding="utf-8")
     print(f"\n💾 저장됨: {path}")
+
+    # 4-b) 허브(invest-hub)용 웹페이지 생성 (docs/index.html). Actions가 이걸 커밋해 Pages로 발행.
+    import build_html
+    html_path = build_html.write(final, now)
+    print(f"🌐 웹페이지: {html_path}")
 
     # 5) 정시 발송 대기 (SEND_AT 이 지정된 경우, 한국시간 그 시각 정각까지 기다림)
     _wait_until_send_time()
