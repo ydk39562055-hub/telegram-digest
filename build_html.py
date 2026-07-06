@@ -21,8 +21,9 @@ _HEAD = """<!DOCTYPE html>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
 <style>
-  :root{--bg:#0f1115;--bar:#0b0d11;--panel:#161a21;--panel2:#1c2029;--line:#262b36;
-    --txt:#e8eaee;--mut:#8b93a3;--accent:#6ea8fe}
+  /* 브라운 리디자인 토큰 (handoff_브라운_대시보드) */
+  :root{--bg:#15100d;--bar:#120e0b;--panel:#221b15;--panel2:#261e16;--line:#3a2f24;
+    --txt:#f2ebe0;--mut:#a08f7d;--accent:#c89468}
   *{box-sizing:border-box}
   html,body{margin:0}
   body{background:var(--bg);color:var(--txt);
@@ -37,12 +38,12 @@ _HEAD = """<!DOCTYPE html>
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:14px 16px;margin:0 0 14px}
   .card h2{font-size:15px;font-weight:700;margin:0 0 10px;letter-spacing:-.2px}
-  .card.lead{background:var(--panel2);border-color:#33507e}
+  .card.lead{background:var(--panel2);border-color:#7c5e3f}
   .card.lead h2{color:var(--accent)}
-  .card.warn{border-color:#5a4a2a}
+  .card.warn{border-color:#5a4630}
   ul{margin:0;padding:0;list-style:none}
   li{position:relative;padding:6px 0 6px 16px;border-top:1px solid transparent}
-  li+li{border-top:1px solid #1e2330}
+  li+li{border-top:1px solid #2a2118}
   li::before{content:"";position:absolute;left:2px;top:14px;width:5px;height:5px;
     border-radius:50%;background:var(--accent);opacity:.75}
   .card.lead li::before{background:var(--accent);opacity:1}
