@@ -31,3 +31,4 @@
 |---|---|---|---|
 | ETF-01 | [HAA — Hybrid Asset Allocation](etf_01_haa.md) | 경고 자산 TIP 1개 · 월 1회 | 보관 |
 | ETF-02 | [BAA — Bold Asset Allocation](etf_02_baa.md) | 경고 자산 4개 · 월 1회 | 보관 |
+| ETF-03 | [산업 추세추종 — Zarattini·Antonacci](etf_03_industry_trends.md) | 섹터/산업 돌파 · 일 단위 | 보관 |
