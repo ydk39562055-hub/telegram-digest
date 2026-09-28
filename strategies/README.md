@@ -18,12 +18,12 @@
 | 번호 | 파일 | 유형 | 상태 |
 |---|---|---|---|
 | 01 | [제시 스타인 — Insider Buy Superstocks](01_jesse_stine_superstocks.md) | 개별 소형주 · 재량 체크리스트 | 보관 |
-| — | 로렌스 벤스도프 (추세 시스템만) | 개별주 · 자동 | 자료 대기 |
-| — | 닉 라지 — Weekend Trend Trader | 개별주 · 주 1회 · 자동 | 자료 대기 |
-| — | 안드레아스 클레노우 — Stocks on the Move | 개별주 · 주 1회 · 자동 | 자료 대기 |
-| — | 마크 미너비니 — 트렌드 템플릿 | 개별주 · 필터 자동 + 진입 재량 | 자료 대기 |
-| — | 스탠 와인스타인 — 스테이지 분석 | 개별주 · 주봉 · 자동 | 자료 대기 |
-| — | 쿨라매기 (Qullamaggie) | 개별주 · 재량 비중 큼 | 자료 대기 |
+| 02 | [로렌스 벤스도프 — 추세 시스템만](02_bensdorp_trend.md) | 대형주 · 주 1회 · 자동 | 보관 |
+| 03 | [닉 라지 — Weekend Trend Trader](03_radge_weekend_trend_trader.md) | 전체 미국주 · 주 1회 · 자동 | 보관 |
+| 04 | [안드레아스 클레노우 — Stocks on the Move](04_clenow_stocks_on_the_move.md) | S&P 500 · 주 1회 · 자동 | 보관 |
+| 05 | [마크 미너비니 — 트렌드 템플릿 + VCP](05_minervini_trend_template.md) | 성장주 · 필터 자동 + 진입 재량 | 보관 |
+| 06 | [스탠 와인스타인 — 스테이지 분석](06_weinstein_stage_analysis.md) | 개별주·섹터 · 주봉 · 자동 | 보관 |
+| 07 | 쿨라매기 (Qullamaggie) | 개별주 · 재량 비중 큼 | 사용자 자료 대기 |
 
 ### ETF 자산배분
 
